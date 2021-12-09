@@ -1,0 +1,19 @@
+[package]
+name = "aca_bot"
+version = "0.1.0"
+edition = "2021"
+description = "A Discord bot focused on addressing the inherent problems with Discord, to allow a more socialist/anarchist organization of servers (or \"guilds\")."
+repository = "https://github.com/RainOfPain125/ACABot"
+readme = "README.md"
+license-file = "LICENSE"
+license = "GPL-3.0-or-later"
+exclude = [".env"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serenity = "0.10.*"
+dotenv = "0.15.*"
+anyhow = "1.0.*"
+diesel = { version =  "1.4.*", features = ["sqlite"] }
+tokio = { version = "1.5.*", features = ["full"] }
