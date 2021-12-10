@@ -1,0 +1,5 @@
+# Fill out and copy to .env
+DISCORD_TOKEN={Discord API key}
+DATABASE_URL={Path to DB file}
+LOG_CHANNEL={Channel ID for logging bans, vote conclusions, etc}
+VOTE_CHANNEL={Channel ID for vote announcements and conclusions}

@@ -21,7 +21,7 @@ use serenity::{
     model::channel::Message,
 };
 
-/// Repeat everything the caller said after the sixth index or rather everything after "!echo "
+/// Repeat everything the caller said after the sixth index position or rather everything after "!echo "
 #[command]
 pub async fn echo(ctx: &Context, msg: &Message) -> CommandResult {
     msg.channel_id

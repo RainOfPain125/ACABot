@@ -5,7 +5,6 @@ edition = "2021"
 description = "A Discord bot focused on addressing the inherent problems with Discord, to allow a more socialist/anarchist organization of servers (or \"guilds\")."
 repository = "https://github.com/RainOfPain125/ACABot"
 readme = "README.md"
-license-file = "LICENSE"
 license = "GPL-3.0-or-later"
 exclude = [".env"]
 

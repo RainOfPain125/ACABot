@@ -12,26 +12,3 @@
 
 // You should have received a copy of the GNU General Public License
 // along with aca_bot.  If not, see <https://www.gnu.org/licenses/>.
-
-use std::env;
-
-pub mod general;
-
-use anyhow::Result;
-use serenity::model::id;
-
-pub struct Config {
-    pub log_channel: id::ChannelId,
-    pub vote_channel: id::ChannelId,
-}
-
-pub fn get_config() -> Result<Config> {
-    Ok(Config {
-        log_channel: id::ChannelId {
-            0: env::var("LOG_CHANNEL")?.parse::<u64>()?,
-        },
-        vote_channel: id::ChannelId {
-            0: env::var("VOTE_CHANNEL")?.parse::<u64>()?,
-        },
-    })
-}
