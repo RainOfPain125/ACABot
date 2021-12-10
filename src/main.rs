@@ -17,7 +17,7 @@
 
 use std::env;
 
-mod lib;
+use aca_bot::general::*;
 
 use anyhow::Result;
 use serenity::{
