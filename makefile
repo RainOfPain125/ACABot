@@ -17,36 +17,40 @@ target = target/
 
 build:
 	cargo build --release &
-	disown -a
+	@disown -a
 
 all:
 	cargo build --release &
-	disown -a
+	@disown -a
 
 dev:
 	cargo run &
-	disown -a
+	@disown -a
 
 test:
 	cargo test &
-	disown -a
+	@disown -a
 
 clean:
 	rm -rf target
 
 style-check:
 	@rustup component add rustfmt 2> /dev/null
-	@cargo fmt
+	cargo fmt
 
 bench:
 	cargo bench --all-features &
-	disown -a
+	@disown -a
+
+doc:
+	cargo doc --open --no-deps
 
 help:
 	@echo "make			- Build crate"
 	@echo "make build		- Alias of make"
 	@echo "make all		- Alias of make"
 	@echo "make dev		- Build unoptimized dev build and run it"
+	@echo "make doc		- Compile and view docs in web browser"
 	@echo "make clean		- Delete target/ directory"
 	@echo "make test		- Build and run tests"
 	@echo "make bench		- Build and run benches"
