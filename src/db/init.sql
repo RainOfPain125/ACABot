@@ -12,7 +12,3 @@
 
 -- You should have received a copy of the GNU General Public License
 -- along with aca_bot.  If not, see <https://www.gnu.org/licenses/>.
-
-use std::include_str;
-
-pub static INIT_SQL: &str = include_str!("init.sql");
