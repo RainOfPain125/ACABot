@@ -17,6 +17,7 @@
 
 use std::env;
 
+mod db;
 use aca_bot::general::*;
 
 use anyhow::Result;

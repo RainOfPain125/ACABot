@@ -15,11 +15,11 @@
 
 mod init;
 
-use rusqlite::{self, connection};
-use anyhow::result;
+use rusqlite::{self, Connection};
+use anyhow::Result;
 
-fn get_connection() -> result<rusqlite::connection> {
-    let conn = connection::open("bot.db")?;
-    conn.execute(init::INIT_SQL)?;
+pub fn get_connection() -> Result<rusqlite::Connection> {
+    let conn = Connection::open("bot.db")?;
+    conn.execute(init::INIT_SQL, [])?;
     Ok(conn)
 }
