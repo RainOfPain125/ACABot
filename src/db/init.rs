@@ -15,4 +15,6 @@
 
 use std::include_str;
 
+/// SQL for database initialization as a str. Brought from src/db/init.sql at compile time.
+/// Provided SQL will not do anything that isn't already done with the help of "NOT EXISTS".
 pub static INIT_SQL: &str = include_str!("init.sql");

@@ -18,6 +18,7 @@
 use std::env;
 
 mod db;
+mod events;
 use aca_bot::general::*;
 
 use anyhow::Result;
@@ -41,6 +42,7 @@ async fn main() -> Result<()> {
         .group(&GENERAL_GROUP);
     let mut client = Client::builder(env::var("DISCORD_TOKEN")?)
         .framework(framework)
+        .event_handler(events::Handler)
         .await?;
     client.start().await?;
 

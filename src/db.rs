@@ -15,11 +15,28 @@
 
 mod init;
 
-use rusqlite::{self, Connection};
 use anyhow::Result;
+use rusqlite::{self, Connection};
 
-pub fn get_connection() -> Result<rusqlite::Connection> {
+/// Get database connection.
+pub fn get_connection() -> Result<Conn> {
     let conn = Connection::open("bot.db")?;
     conn.execute(init::INIT_SQL, [])?;
-    Ok(conn)
+    Ok(Conn { connection: conn })
+}
+
+/// Struct containing a rusqlite connection and abstract methods to interact with it.
+pub struct Conn {
+    pub connection: rusqlite::Connection, // TODOOO: Wrap this in arc or something so that it can be locked when in use
+}
+
+impl Conn {
+    /// Update the guilds table with the current guilds the bot is in
+    pub async fn update_guilds(&self, ctx: serenity::client::Context) -> Result<()> {
+        for id in ctx.cache.guilds().await {
+            self.connection.execute("DELETE FROM guilds WHERE *;
+            INSERT INTO guilds VALUES (?)", [id.0]);
+        }
+        Ok(())
+    }
 }
