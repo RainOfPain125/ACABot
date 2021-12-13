@@ -23,6 +23,7 @@ use aca_bot::general::*;
 
 use anyhow::Result;
 use serenity::{
+    client::bridge::gateway::GatewayIntents,
     framework::{standard::macros::group, StandardFramework},
     Client,
 };
@@ -42,6 +43,12 @@ async fn main() -> Result<()> {
         .group(&GENERAL_GROUP);
     let mut client = Client::builder(env::var("DISCORD_TOKEN")?)
         .framework(framework)
+        .intents(
+            GatewayIntents::GUILD_MEMBERS
+                | GatewayIntents::GUILD_BANS
+                | GatewayIntents::DIRECT_MESSAGES
+                | GatewayIntents::DIRECT_MESSAGE_REACTIONS,
+        )
         .event_handler(events::Handler)
         .await?;
     client.start().await?;

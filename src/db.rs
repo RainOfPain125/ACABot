@@ -13,29 +13,37 @@
 // You should have received a copy of the GNU General Public License
 // along with aca_bot.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::sync::Mutex;
+
 mod init;
 
 use anyhow::Result;
 use rusqlite::{self, Connection};
+use serenity::model::id::GuildId;
 
 /// Get database connection.
-pub fn get_connection() -> Result<Conn> {
+pub fn get_connection() -> Result<Mutex<Conn>> {
     let conn = Connection::open("bot.db")?;
     conn.execute(init::INIT_SQL, [])?;
-    Ok(Conn { connection: conn })
+    Ok(Mutex::new(Conn { connection: conn })) // TODOOO: Wrap this in arc & mutex or something so that it can be locked when in use
 }
 
 /// Struct containing a rusqlite connection and abstract methods to interact with it.
 pub struct Conn {
-    pub connection: rusqlite::Connection, // TODOOO: Wrap this in arc or something so that it can be locked when in use
+    pub connection: rusqlite::Connection,
 }
 
+
 impl Conn {
-    /// Update the guilds table with the current guilds the bot is in
-    pub async fn update_guilds(&self, ctx: serenity::client::Context) -> Result<()> {
-        for id in ctx.cache.guilds().await {
-            self.connection.execute("DELETE FROM guilds WHERE *;
-            INSERT INTO guilds VALUES (?)", [id.0]);
+    /// Update the guilds table with a vector of guild ids
+    pub fn update_guilds(&self, ids: Vec<GuildId>) -> Result<()> {
+        for id in ids {
+            self.connection.execute(
+                "DELETE FROM guilds; 
+            INSERT INTO guilds VALUES (?)", // TODOO: Once guilds start having actual values this won't work.
+                                            // Change so that it only romoves or adds what needs removing or adding
+                rusqlite::params![id.0],
+            )?;
         }
         Ok(())
     }

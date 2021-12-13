@@ -12,3 +12,8 @@
 
 -- You should have received a copy of the GNU General Public License
 -- along with aca_bot.  If not, see <https://www.gnu.org/licenses/>.
+
+CREATE TABLE "guilds" (
+	"id"	INTEGER NOT NULL UNIQUE,
+	PRIMARY KEY("id")
+);
