@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
                 | GatewayIntents::DIRECT_MESSAGES
                 | GatewayIntents::DIRECT_MESSAGE_REACTIONS,
         )
-        .event_handler(events::Handler)
+        .event_handler(events::Handler::new()?)
         .await?;
     client.start().await?;
 

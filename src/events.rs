@@ -15,24 +15,33 @@
 
 use super::db;
 
-use serenity::{async_trait, model::gateway::Ready, prelude::*};
 use anyhow::Result;
-pub struct Handler;
+use serenity::{async_trait, model::gateway::Ready, prelude::*};
+pub struct Handler {
+    connection: db::Conn,
+}
+
+impl Handler {
+    pub fn new() -> Result<Self> {
+        Ok(Self {
+            connection: db::Conn::new()?,
+        })
+    }
+}
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
-        handle_result(update_guilds(ctx).await);
+        handle_result(update_guilds(ctx, &self.connection).await);
     }
     async fn guild_unavailable(&self, ctx: Context, _: serenity::model::id::GuildId) {
-        handle_result(update_guilds(ctx).await);
+        handle_result(update_guilds(ctx, &self.connection).await);
     }
     async fn guild_create(&self, ctx: Context, _: serenity::model::guild::Guild, _: bool) {
-        handle_result(update_guilds(ctx).await);
+        handle_result(update_guilds(ctx, &self.connection).await);
     }
-    // TODO: Add 'add member' and 'remove member' events here to add and remove members from a member table.
-    // Keep in mind a member still maybe in another server within the network so do not remove them in that case.
+    // TODO: Add 'add member' and 'remove member' events here to add and remove members from a member table. Keep in mind a member still maybe in another server within the network so do not remove them in that case.
 }
 
 fn handle_result(result: Result<()>) {
@@ -42,8 +51,7 @@ fn handle_result(result: Result<()>) {
     }
 }
 
-async fn update_guilds(ctx: Context) -> Result<()>{
-    let conn = db::get_connection()?.lock()?;
+async fn update_guilds(ctx: Context, conn: &db::Conn) -> Result<()> {
     conn.update_guilds(ctx.cache.guilds().await)?;
     Ok(())
 }

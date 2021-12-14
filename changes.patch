@@ -1,0 +1,97 @@
+diff --git src/db.rs src/db.rs
+index a16cbc9..8f28d82 100644
+--- src/db.rs
++++ src/db.rs
+@@ -22,15 +22,17 @@ use rusqlite::{self, Connection};
+ use serenity::model::id::GuildId;
+ 
+ /// Get database connection.
+-pub fn get_connection() -> Result<Mutex<Conn>> {
++pub fn get_connection() -> Result<Conn> {
+     let conn = Connection::open("bot.db")?;
+     conn.execute(init::INIT_SQL, [])?;
+-    Ok(Mutex::new(Conn { connection: conn })) // TODOOO: Wrap this in arc & mutex or something so that it can be locked when in use
++    Ok(Conn {
++        connection: Mutex::new(conn),
++    }) // TODOOO: Wrap this in arc & mutex or something so that it can be locked when in use
+ }
+ 
+ /// Struct containing a rusqlite connection and abstract methods to interact with it.
+ pub struct Conn {
+-    pub connection: rusqlite::Connection,
++    pub connection: Mutex<rusqlite::Connection>,
+ }
+ 
+ 
+@@ -38,7 +40,7 @@ impl Conn {
+     /// Update the guilds table with a vector of guild ids
+     pub fn update_guilds(&self, ids: Vec<GuildId>) -> Result<()> {
+         for id in ids {
+-            self.connection.execute(
++            self.connection.lock().unwrap().execute(
+                 "DELETE FROM guilds; 
+             INSERT INTO guilds VALUES (?)", // TODOO: Once guilds start having actual values this won't work.
+                                             // Change so that it only romoves or adds what needs removing or adding
+diff --git src/events.rs src/events.rs
+index 545d859..ffb4a28 100644
+--- src/events.rs
++++ src/events.rs
+@@ -17,19 +17,30 @@ use super::db;
+ 
+ use serenity::{async_trait, model::gateway::Ready, prelude::*};
+ use anyhow::Result;
+-pub struct Handler;
++
++pub struct Handler {
++    connection: db::Conn,
++}
++
++impl Handler {
++    pub fn new() -> Result<Self> {
++        Ok(Self {
++            connection: db::get_connection()?,
++        })
++    }
++}
+ 
+ #[async_trait]
+ impl EventHandler for Handler {
+     async fn ready(&self, ctx: Context, ready: Ready) {
+         println!("{} is connected!", ready.user.name);
+-        handle_result(update_guilds(ctx).await);
++        handle_result(update_guilds(ctx, &self.connection).await);
+     }
+     async fn guild_unavailable(&self, ctx: Context, _: serenity::model::id::GuildId) {
+-        handle_result(update_guilds(ctx).await);
++        handle_result(update_guilds(ctx, &self.connection).await);
+     }
+     async fn guild_create(&self, ctx: Context, _: serenity::model::guild::Guild, _: bool) {
+-        handle_result(update_guilds(ctx).await);
++        handle_result(update_guilds(ctx, &self.connection).await);
+     }
+     // TODO: Add 'add member' and 'remove member' events here to add and remove members from a member table.
+     // Keep in mind a member still maybe in another server within the network so do not remove them in that case.
+@@ -42,8 +53,7 @@ fn handle_result(result: Result<()>) {
+     }
+ }
+ 
+-async fn update_guilds(ctx: Context) -> Result<()>{
+-    let conn = db::get_connection()?.lock()?;
++async fn update_guilds(ctx: Context, conn: &db::Conn) -> Result<()> {
+     conn.update_guilds(ctx.cache.guilds().await)?;
+     Ok(())
+ }
+\ No newline at end of file
+diff --git src/main.rs src/main.rs
+index 74f1714..8f19fad 100644
+--- src/main.rs
++++ src/main.rs
+@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
+                 | GatewayIntents::DIRECT_MESSAGES
+                 | GatewayIntents::DIRECT_MESSAGE_REACTIONS,
+         )
+-        .event_handler(events::Handler)
++        .event_handler(events::Handler::new()?)
+         .await?;
+     client.start().await?;
+ 

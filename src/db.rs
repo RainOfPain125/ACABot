@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with aca_bot.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::env;
 use std::sync::Mutex;
 
 mod init;
@@ -20,29 +21,28 @@ mod init;
 use anyhow::Result;
 use rusqlite::{self, Connection};
 use serenity::model::id::GuildId;
-
-/// Get database connection.
-pub fn get_connection() -> Result<Mutex<Conn>> {
-    let conn = Connection::open("bot.db")?;
-    conn.execute(init::INIT_SQL, [])?;
-    Ok(Mutex::new(Conn { connection: conn })) // TODOOO: Wrap this in arc & mutex or something so that it can be locked when in use
-}
-
 /// Struct containing a rusqlite connection and abstract methods to interact with it.
 pub struct Conn {
-    pub connection: rusqlite::Connection,
+    pub connection: Mutex<rusqlite::Connection>, // TODOOO: Wrap this in arc something so that it can be shared between threads.
 }
 
-
 impl Conn {
+    /// Get database connection.
+    pub fn new() -> Result<Conn> {
+        let conn = Connection::open(env::var("DATABASE_URL")?)?;
+        conn.execute(init::INIT_SQL, [])?; // TODOO: This should be conditional on if the db exists or not. Maybe dev flag in .env to delete the database on startup?
+        Ok(Conn {
+            connection: Mutex::new(conn),
+        })
+    }
+
     /// Update the guilds table with a vector of guild ids
     pub fn update_guilds(&self, ids: Vec<GuildId>) -> Result<()> {
         for id in ids {
-            self.connection.execute(
+            self.connection.lock().unwrap().execute(
                 "DELETE FROM guilds; 
-            INSERT INTO guilds VALUES (?)", // TODOO: Once guilds start having actual values this won't work.
-                                            // Change so that it only romoves or adds what needs removing or adding
-                rusqlite::params![id.0],
+            INSERT INTO guilds VALUES (?)", // TODOO: Once guilds start having actual values this won't work. Change so that it only removes or adds what needs removing or adding.
+                rusqlite::params![id.0], // TODOOOO: "Wrong number of parameters passed to query. Got 1, needed 0" I'm fairly sure I did this right. Is `?` not the right sign? WTF
             )?;
         }
         Ok(())
