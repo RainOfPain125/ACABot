@@ -1,3 +1,7 @@
 # Fill out and copy to .env
 DISCORD_TOKEN={Discord API key}
 DATABASE_URL={Path to DB file}
+
+# Manditory by AGPL requirement. Make sure this links to the code you are actually running or you could be sued.
+# If you made no modification then just link to where you got this code from.
+REPOSITORY_LINK={Link to a git repository or something containing the source code that you are running}
