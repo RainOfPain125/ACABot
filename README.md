@@ -9,6 +9,14 @@ Bot functions outline https://docs.google.com/document/d/12JEqEaEH5LSH_n49ro7Qve
 
 If anything below sounds unnecessary, then it is most likely an option to edit or disable it.
 
+- # Documentation License
+    Copyright (C) 2021 ACA.
+    Permission is granted to copy, distribute and/or modify this document
+    under the terms of the GNU Free Documentation License, Version 1.3
+    or any later version published by the Free Software Foundation;
+    with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+    A copy of the license is included in the file named "DOCUMENTATION".
+
 - # Vetting
   - Auto create new channels for each person who begins vetting.
   - Create custom commands to accept user applications.
@@ -38,3 +46,6 @@ If anything below sounds unnecessary, then it is most likely an option to edit o
   - Sync roles across servers (Such as pronouns, chat color, etc. If you trust the vetting process of a linked server, then you can also sync the approved vetting role so that if the user is accepted in their discord, they will automatically be accepted in yours).
   - As said earlier, sync vetting questions across linked servers.
   - Sync mod logs across linked servers.
+
+- # License
+  This project is licensed under GPL-3.0 - See LICENSE for more details.

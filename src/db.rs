@@ -16,12 +16,14 @@
 
 use std::env;
 use std::sync::Mutex;
+use std::fs;
 
 mod init;
 
 use anyhow::Result;
 use rusqlite::{self, Connection};
-use serenity::model::id::GuildId;
+use serenity::model::id;
+
 /// Struct containing a rusqlite connection and abstract methods to interact with it.
 pub struct Conn {
     pub connection: Mutex<rusqlite::Connection>, // TODOOO: Wrap this in arc something so that it can be shared between threads.
@@ -30,15 +32,21 @@ pub struct Conn {
 impl Conn {
     /// Get database connection.
     pub fn new() -> Result<Conn> {
-        let conn = Connection::open(env::var("DATABASE_URL")?)?;
-        conn.execute(init::INIT_SQL, [])?; // TODOO: This should be conditional on if the db exists or not. Maybe dev flag in .env to delete the database on startup?
+        let conn;
+        if env::var("DEV")? == "true" {
+            fs::remove_file(env::var("DATABASE_PATH")?).ok();
+            conn = Connection::open(env::var("DATABASE_PATH")?)?;
+            conn.execute(init::INIT_SQL, [])?;
+        } else {
+            conn = Connection::open(env::var("DATABASE_PATH")?)?;
+        }
         Ok(Conn {
             connection: Mutex::new(conn),
         })
     }
 
     /// Update the guilds table with a vector of guild ids
-    pub fn update_guilds(&self, ids: Vec<GuildId>) -> Result<()> {
+    pub fn update_guilds(&self, ids: Vec<id::GuildId>) -> Result<()> {
         for id in ids {
             self.connection.lock().unwrap().execute(
                 "DELETE FROM guilds; 

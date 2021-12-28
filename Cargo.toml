@@ -15,4 +15,4 @@ serenity = "0.10.*"
 dotenv = "0.15.*"
 anyhow = "1.0.*"
 tokio = { version = "1.5.*", features = ["full"] }
-rusqlite = "0.26.3"
+rusqlite = "0.26.*"
