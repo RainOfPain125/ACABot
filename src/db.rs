@@ -14,13 +14,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+//! Abstract over the database connection.
+
 use std::env;
-use std::sync::Mutex;
 use std::fs;
+use std::sync::Mutex;
 
 mod init;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use rusqlite::{self, Connection};
 use serenity::model::id;
 
@@ -34,11 +36,21 @@ impl Conn {
     pub fn new() -> Result<Conn> {
         let conn;
         if env::var("DEV")? == "true" {
-            fs::remove_file(env::var("DATABASE_PATH")?).ok();
-            conn = Connection::open(env::var("DATABASE_PATH")?)?;
+            fs::remove_file(
+                env::var("DATABASE_PATH")
+                    .context("Couldn't open database connection. Fill out .env")?,
+            )
+            .ok();
+            conn = Connection::open(
+                env::var("DATABASE_PATH")
+                    .context("Couldn't open database connection. Fill out .env")?,
+            )?;
             conn.execute(init::INIT_SQL, [])?;
         } else {
-            conn = Connection::open(env::var("DATABASE_PATH")?)?;
+            conn = Connection::open(
+                env::var("DATABASE_PATH")
+                    .context("Couldn't open database connection. Fill out .env")?,
+            )?;
         }
         Ok(Conn {
             connection: Mutex::new(conn),

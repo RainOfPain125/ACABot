@@ -14,20 +14,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-//! A Discord bot focused on addressing the inherent problems with Discord, to allow a more socialist/anarchist organization of servers (or "guilds").
-
 use std::env;
 
 mod db;
 mod events;
 use aca_bot::general::*;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serenity::{
-    client::bridge::gateway::GatewayIntents,
+    client::{bridge::gateway::GatewayIntents},
     framework::{standard::macros::group, StandardFramework},
     Client,
 };
+use ctrlc;
 
 // Groups
 #[group]
@@ -36,22 +35,28 @@ struct General;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    ctrlc::set_handler(move || {
+        std::process::exit(0); // TODO: I notice that when ctrl+c is called it doesn't actually exit. This works but definitely isn't a good way of doing this. Make this exit gracefully out of tokio.
+    })?;
+
     dotenv::dotenv()?;
 
     // Serenity boilerplate
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("!"))
         .group(&GENERAL_GROUP);
-    let mut client = Client::builder(env::var("DISCORD_TOKEN")?)
-        .framework(framework)
-        .intents(
-            GatewayIntents::GUILD_MEMBERS
-                | GatewayIntents::GUILD_BANS
-                | GatewayIntents::DIRECT_MESSAGES
-                | GatewayIntents::DIRECT_MESSAGE_REACTIONS,
-        )
-        .event_handler(events::Handler::new()?)
-        .await?;
+    let mut client = Client::builder(
+        env::var("DISCORD_TOKEN").context("Couldn't authenticate with Discord. Fill out .env")?,
+    )
+    .framework(framework)
+    .intents(
+        GatewayIntents::GUILD_MEMBERS
+            | GatewayIntents::GUILD_BANS
+            | GatewayIntents::DIRECT_MESSAGES
+            | GatewayIntents::DIRECT_MESSAGE_REACTIONS,
+    )
+    .event_handler(events::Handler::new()?)
+    .await?;
     client.start().await?;
 
     Ok(())

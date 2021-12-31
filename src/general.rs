@@ -33,8 +33,9 @@ pub async fn echo(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
+/// Send the contents of the "REPOSITORY_LINK" environment variable which should contain a repository link.
 #[command]
-#[aliases(code, source_code, git, repo)]
+#[aliases(code, source_code, git, repo, repository)]
 pub async fn source(ctx: &Context, msg: &Message) -> CommandResult {
     msg.channel_id
         .say(ctx, env::var("REPOSITORY_LINK")?)
