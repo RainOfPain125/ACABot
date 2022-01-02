@@ -59,13 +59,24 @@ impl Conn {
 
     /// Update the guilds table with a vector of guild ids
     pub fn update_guilds(&self, ids: Vec<id::GuildId>) -> Result<()> {
+        let conn = self.connection.lock().unwrap();
+        let mut stmt = conn.prepare("INSERT OR IGNORE INTO guilds VALUES (?)")?;
+        let mut new: Vec<String> = Vec::new();
         for id in ids {
-            self.connection.lock().unwrap().execute(
-                "DELETE FROM guilds; 
-            INSERT INTO guilds VALUES (?)", // TODOO: Once guilds start having actual values this won't work. Change so that it only removes or adds what needs removing or adding.
-                rusqlite::params![id.0], // TODOOOO: "Wrong number of parameters passed to query. Got 1, needed 0" I'm fairly sure I did this right. Is `?` not the right sign? WTF
-            )?;
+            new.push(id.to_string());
         }
+        for id in &new {
+            conn.execute("DELETE FROM guilds", [])?;
+            stmt.execute([id])?;
+        }
+
+        let params = "id=? AND ".to_string().repeat(new.len() - 1);
+
+        let mut stmt =
+            conn.prepare(&("DELETE FROM guilds WHERE NOT ".to_string() + &params[..] + "id=?"))?;
+
+        stmt.execute(rusqlite::params_from_iter(new))?;
+
         Ok(())
     }
 }

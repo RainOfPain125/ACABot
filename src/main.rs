@@ -21,12 +21,12 @@ mod events;
 use aca_bot::general::*;
 
 use anyhow::{Context, Result};
+use ctrlc;
 use serenity::{
-    client::{bridge::gateway::GatewayIntents},
+    client::bridge::gateway::GatewayIntents,
     framework::{standard::macros::group, StandardFramework},
     Client,
 };
-use ctrlc;
 
 // Groups
 #[group]
@@ -45,18 +45,16 @@ async fn main() -> Result<()> {
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("!"))
         .group(&GENERAL_GROUP);
-    let mut client = Client::builder(
-        env::var("DISCORD_TOKEN").context("Couldn't authenticate with Discord. Fill out .env")?,
-    )
-    .framework(framework)
-    .intents(
-        GatewayIntents::GUILD_MEMBERS
-            | GatewayIntents::GUILD_BANS
-            | GatewayIntents::DIRECT_MESSAGES
-            | GatewayIntents::DIRECT_MESSAGE_REACTIONS,
-    )
-    .event_handler(events::Handler::new()?)
-    .await?;
+    let mut client = Client::builder(env::var("DISCORD_TOKEN").context("Fill out .env")?)
+        .framework(framework)
+        .intents(
+            GatewayIntents::GUILD_MEMBERS
+                | GatewayIntents::GUILD_BANS
+                | GatewayIntents::DIRECT_MESSAGES
+                | GatewayIntents::DIRECT_MESSAGE_REACTIONS,
+        )
+        .event_handler(events::Handler::new()?)
+        .await?;
     client.start().await?;
 
     Ok(())
